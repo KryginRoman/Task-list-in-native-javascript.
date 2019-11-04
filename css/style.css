@@ -1,0 +1,96 @@
+/*Base Styles*/
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    font-size: 10px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 15px;
+    padding-right: 15px;
+    position: relative;
+}
+
+/***********/
+
+.task-list {
+    background-color: #f1fce1;
+    border: 2px solid #000;
+    display: flex;
+    font-size: 1.5rem;
+    min-height: 200px;
+    padding: 10px;
+    width: 500px;
+}
+
+.task-input {
+    border: 1px solid #000;
+    width: 40%;
+}
+
+.task-input__field {
+    height: 35px;
+    padding-right: 15px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.task-input__add,
+.task-input__clear {
+    display: block;
+    margin: 0 auto;
+    margin-bottom: 10px;
+}
+
+.task-wrap {
+    border: 1px solid #000;
+    padding: 10px;
+    width: 60%;
+}
+
+.list {
+    border: 1px solid #351c7a;
+    list-style: none;
+    padding: 5px;
+}
+
+/* .list-checkbox {
+
+} */
+
+.list__remove-button {
+    border: 1px solid red;
+    cursor: pointer;
+    width: 20px;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.list__remove-button ::after,
+.list__remove-button ::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    height: 100%;
+    width: 2px;
+}
+
+.list-item {
+    border: 1px solid #ff003c;
+    position: relative;
+}
+
+.done-task {
+    text-decoration: line-through;
+    border: 1px solid #35ed28;
+}
