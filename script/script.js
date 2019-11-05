@@ -10,16 +10,33 @@ document.addEventListener("DOMContentLoaded", () => {
     /*Functionality*/
 
     const addTask = task => {
-        const hasTask = collectionOfTasks.includes(task);
+        const verificationTask = hasTask(task);
 
-        if (hasTask) return;
+        if (verificationTask) return;
 
-        collectionOfTasks.push(task);
+        const taskObject = {
+            "name": task,
+            "done": false
+        };
+
+        collectionOfTasks.push(taskObject);
     };
     const removeTask = task => {
-        const indexTask = collectionOfTasks.findIndex(item => (item.toLowerCase() === task.toLowerCase()));
+        const indexTask = collectionOfTasks.findIndex(item => (item.name === task));
 
         collectionOfTasks.splice(indexTask, 1);
+    };
+    const makeDoneTask = task => {
+        collectionOfTasks.forEach(item => {
+            if (item.name === task) {
+                item.done = true;
+            }
+        });
+    };
+    const hasTask = taskName => {
+        const findedTask = collectionOfTasks.findIndex(item => (item.name === taskName));
+
+        return (findedTask != -1);
     };
     const clearTaskList = taskCollection => {
         taskCollection.splice(0, taskCollection.length);
@@ -29,12 +46,16 @@ document.addEventListener("DOMContentLoaded", () => {
         return (value === "");
     };
     const renderTaskRow = task => {
+        const {name} = task;
         const li = document.createElement("li");
         const innerLi = `
-            <span class="task-text">${task}</span>
+            <span class="task-text">${name}</span>
             <input type="checkbox" class="list-checkbox">
             <div class="list__remove-button"></div>
         `;
+        if (task.done) {
+            li.classList.add("done-task");
+        }
 
         li.classList.add("list-item");
         li.innerHTML = innerLi;
@@ -44,22 +65,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const renderTaskList = taskCollection => {
         taskList.innerHTML = "";
 
-        taskCollection.forEach(task => {
-            const listItem = renderTaskRow(task);
+        taskCollection.forEach(item => {
+            const listItem = renderTaskRow(item);
 
             taskList.append(listItem);
         });
     };
+    // const updateStorage = (key, value) => {
+    //     localStorage.setItem(key, value);
+    // };
 
     /*Adding event handlers*/ 
 
     addTaskButton.addEventListener("click", () => {
         const inputField = document.querySelector(".task-input__field");
+        const lowerCaseTaskName = inputField.value.toLowerCase();
 
         if (checkEmptyField(inputField)) {
             alert("empty field, please write your task.");
         } else {
-            addTask(inputField.value);
+            addTask(lowerCaseTaskName);
             renderTaskList(collectionOfTasks);
             inputField.value = "";
         }
@@ -72,19 +97,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     taskList.addEventListener("click", ({target}) => {
         const taskRow = target.closest(".list-item");
+        const taskName = taskRow.querySelector(".task-text").textContent.trim();
 
         if (target.classList.contains("list-checkbox")) {
             taskRow.classList.toggle("done-task");
+            makeDoneTask(taskName);
         } else if (target.classList.contains("list__remove-button")) {
-            const taskName = taskRow.querySelector(".task-text").textContent;
-
             taskRow.remove();
             removeTask(taskName);
             renderTaskList(collectionOfTasks);
         } else {
             return false;
         }
-    });
-
+    });  
 
 });
