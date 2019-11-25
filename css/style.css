@@ -45,7 +45,12 @@ html {
     padding-right: 15px;
     padding-top: 15px;
     margin-bottom: 15px;
+    transition: all .4s ease-in-out;
     width: 100%;
+}
+
+.task-input__field_invalid {
+    border-color: #d41204;
 }
 
 .task-input__add,
@@ -54,6 +59,7 @@ html {
     border: none;
     border-radius: 6px;
     background-color: #37db65;
+    cursor: pointer;
     font-weight: 600;
     padding: 10px;
     text-transform: uppercase;
@@ -94,9 +100,10 @@ html {
     transition: all .4s;
 }
 
-.list-checkbox:checked  + .label-checkbox {
+
+/* .list-checkbox:checked .label-checkbox {
     background-color: #42f545;
-}
+} */
 
 .label-checkbox:hover {
     background-color: #42f545;
@@ -153,4 +160,8 @@ html {
 .done-task {
     text-decoration: line-through;
     border: 1px solid #35ed28;
+}
+
+.done-task > .label-checkbox {
+    background-color: #42f545;
 }

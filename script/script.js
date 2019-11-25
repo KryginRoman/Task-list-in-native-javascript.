@@ -6,69 +6,67 @@ document.addEventListener("DOMContentLoaded", () => {
     const addTaskButton = document.querySelector(".task-input__add");
     const clearTaskButton = document.querySelector(".task-input__clear");
     const doneAllTaskButton = document.querySelector(".task-input__done");
-    const collectionOfTasks = [];
+    let collectionOfTasks = [];
+    let storageTasks = JSON.parse(localStorage.getItem("storageTasks"));
+    const updateStorage = () => {
+        localStorage.setItem("storageTasks", JSON.stringify(collectionOfTasks));
+        storageTasks = JSON.parse(localStorage.getItem("storageTasks"));
+    };
 
+    storageTasks 
+        ? collectionOfTasks = [...storageTasks] 
+        : updateStorage();
+    
     /*Functionality*/
 
-    const addTask = task => {
-        const verificationTask = hasTask(task);
+    const validateInput = inp => {
+        const inpValue = inp.value.trim().toLowerCase();
 
-        if (verificationTask) return;
+        return !(/[A-Za-z]{1,10}/.test(inpValue));
+    };
+    const addTask = (name, taskCollection) => {
+        if (hasTask(name, taskCollection)) return;
 
-        const taskObject = {
-            "name": task,
-            "done": false
-        };
+        taskCollection.push({name, done: false});
+        updateStorage();
+        renderTaskList(storageTasks);
+    };
+    const removeTask = (task, taskCollection) => {
+        const indexTask = taskCollection.findIndex(item => (item.name === task));
 
-        collectionOfTasks.push(taskObject);
+        taskCollection.splice(indexTask, 1);
+        updateStorage();
+        renderTaskList(storageTasks);
     };
-    const removeTask = task => {
-        const indexTask = collectionOfTasks.findIndex(item => (item.name === task));
-
-        collectionOfTasks.splice(indexTask, 1);
+    const doneTask = (indexTask, taskCollection) => {
+        taskCollection[indexTask].done = true;
     };
-    const doneTask = (indexTask) => {
-        collectionOfTasks[indexTask].done= true;
+    const unfulfilledTask = (indexTask, taskCollection) => {
+        taskCollection[indexTask].done = false;
     };
-    const unfulfilledTask = (indexTask) => {
-        collectionOfTasks[indexTask].done= false;
+    const changeStateTask = (task, taskCollection) => {  
+        taskCollection.forEach((item, index) => item.name === task ? (item.done ? unfulfilledTask(index, taskCollection) : doneTask(index, taskCollection)) : item.name);
+        updateStorage();
+        renderTaskList(storageTasks);
     };
-    const changeStateTask = task => {  
-        collectionOfTasks.forEach((item, index) => {
-            if (item.name === task) {
-                item.done ? unfulfilledTask(index) : doneTask(index);
-            }
-        });
+    const makeDoneAllTasks = taskCollection => {
+        taskCollection.forEach((item, index) => doneTask(index, taskCollection));
+        updateStorage();
+        renderTaskList(storageTasks);
     };
-    const makeDoneAllTasks = () => {
-        collectionOfTasks.forEach((item, index) => {
-            doneTask(index);
-        });
-        renderTaskList(collectionOfTasks);
-    };
-    const hasTask = taskName => {
-        const findedTask = collectionOfTasks.findIndex(item => (item.name === taskName));
-
-        return (findedTask != -1);
+    const hasTask = (taskName, taskCollection) => {
+        return taskCollection.findIndex(item => (item.name === taskName)) != -1;
     };
     const clearTaskList = taskCollection => {
         taskCollection.splice(0, taskCollection.length);
-        renderTaskList(taskCollection);
+        updateStorage();
+        renderTaskList(storageTasks);
     };
-    const checkEmptyField = ({value}) => {
-        return (value === "");
-    };
-    const renameTask = (taskName, newName) => {
-        collectionOfTasks.forEach(item => {
-            if (item.name === taskName) {
-                item.name = newName;
-            }
-        });
+    const renameTask = (taskName, newName, taskCollection) => {
+        taskCollection.forEach(item => item.name === taskName ? item.name = newName : item.name);
     }
-    const editTaskName = taskRow => {
-        const hasEditField = taskRow.querySelector(".editor");
-
-        if (hasEditField) return;
+    const editTaskName = (taskRow, taskCollection) => {
+        if (taskRow.querySelector(".editor")) return;
 
         const editField = document.createElement("input");
         const taskName = taskRow.textContent.trim();
@@ -80,21 +78,19 @@ document.addEventListener("DOMContentLoaded", () => {
         taskRow.append(editField);
 
         editField.addEventListener("blur", ({target}) => {
-            renameTask(taskName, target.value);
-            renderTaskList(collectionOfTasks);
+            renameTask(taskName, target.value, taskCollection);
+            updateStorage();
+            renderTaskList(storageTasks);
         });
     }
-    const renderTaskRow = task => {
-        const {name} = task;
+    const renderTaskRow = ({name, done}) => {
         const li = document.createElement("li");
         const innerLi = `
             <label class="label-checkbox"><input type="checkbox" class="list-checkbox" id="list-checkbox"></label>
             <span class="task-text">${name}</span>
             <div class="list__remove-button"></div>
         `;
-        if (task.done) {
-            li.classList.add("done-task");
-        }
+        if (done) li.classList.add("done-task");
 
         li.classList.add("list-item");
         li.innerHTML = innerLi;
@@ -104,28 +100,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const renderTaskList = taskCollection => {
         taskList.innerHTML = "";
 
-        taskCollection.forEach(item => {
-            const listItem = renderTaskRow(item);
-
-            taskList.append(listItem);
-        });
+        taskCollection.forEach(item => taskList.append(renderTaskRow(item)));
     };
-    // const updateStorage = (key, value) => {
-    //     localStorage.setItem(key, value);
-    // };
 
-    /*Adding event handlers*/ 
+    /*List initialization*/
+
+    renderTaskList(storageTasks);
+
+    /*Adding event handlers*/
 
     addTaskButton.addEventListener("click", () => {
         const inputField = document.querySelector(".task-input__field");
-        const lowerCaseTaskName = inputField.value.toLowerCase();
+        // const lowerCaseTaskName = inputField.value.toLowerCase();!lowerCaseTaskName || lowerCaseTaskName.length > 10
 
-        if (checkEmptyField(inputField)) {
-            alert("empty field, please write your task.");
+        if (validateInput(inputField)) {
+            alert("empty field or longer than 10 characters.(use only letters)");
+            inputField.classList.add("task-input__field_invalid");
         } else {
-            addTask(lowerCaseTaskName);
-            renderTaskList(collectionOfTasks);
+            addTask(inputField.value.trim().toLowerCase(), collectionOfTasks);
             inputField.value = "";
+            inputField.classList.remove("task-input__field_invalid");
         }
 
     });
@@ -135,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     doneAllTaskButton.addEventListener("click", () => {
-        makeDoneAllTasks();
+        makeDoneAllTasks(collectionOfTasks);
     });
 
     taskList.addEventListener("click", ({target}) => {
@@ -144,12 +138,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (target.classList.contains("list-checkbox")) {
             taskRow.classList.toggle("done-task");
-            changeStateTask(taskName);
+            changeStateTask(taskName, collectionOfTasks);
         } else if (target.classList.contains("list__remove-button")) {
-            removeTask(taskName);
-            renderTaskList(collectionOfTasks);
+            removeTask(taskName, collectionOfTasks);
         } else if (target.classList.contains("task-text")) {
-            editTaskName(target);
+            editTaskName(target, collectionOfTasks);
         } else {
             return;
         }
